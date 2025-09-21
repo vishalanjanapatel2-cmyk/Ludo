@@ -1,0 +1,37 @@
+<!doctype html><html><body>
+<h2>Ludo (simple demo)</h2>
+<input id="name" placeholder="your name"><br>
+<button id="create">Create Room</button>
+<input id="room" placeholder="room id"><button id="join">Join Room</button>
+<button id="roll">Roll Dice</button>
+<pre id="log" style="height:300px;overflow:auto;border:1px solid #ccc"></pre>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+const socket = io();
+const logEl = document.getElementById('log');
+const log = (t)=> logEl.innerText += (t+"\n");
+
+document.getElementById('create').onclick = () => {
+  const name = document.getElementById('name').value || 'P';
+  socket.emit('createRoom', { name });
+};
+document.getElementById('join').onclick = () => {
+  const id = document.getElementById('room').value;
+  const name = document.getElementById('name').value || 'P';
+  socket.emit('joinRoom', { roomId: id, name });
+};
+document.getElementById('roll').onclick = () => {
+  const id = document.getElementById('room').value;
+  socket.emit('rollDice', { roomId: id });
+};
+
+socket.on('roomCreated', r => {
+  document.getElementById('room').value = r.id;
+  log('Room created: ' + JSON.stringify(r));
+});
+socket.on('roomUpdate', r => log('Room update: ' + JSON.stringify(r)));
+socket.on('diceRolled', d => log('Dice: ' + d.dice + ' by ' + d.by));
+socket.on('errorMsg', m => alert(m));
+</script>
+</body></html>
